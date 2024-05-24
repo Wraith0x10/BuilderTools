@@ -23,8 +23,10 @@ namespace czechpmdevs\buildertools\shape;
 use czechpmdevs\buildertools\blockstorage\BlockArray;
 use czechpmdevs\buildertools\blockstorage\BlockStorageHolder;
 use czechpmdevs\buildertools\blockstorage\identifiers\BlockIdentifierList;
+use czechpmdevs\buildertools\BuilderTools;
 use czechpmdevs\buildertools\editors\object\FillSession;
 use czechpmdevs\buildertools\editors\object\MaskedFillSession;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\world\World;
 
 class Cuboid implements Shape {
@@ -64,9 +66,18 @@ class Cuboid implements Shape {
 		if($saveReverseData) {
 			$this->reverseData = new BlockStorageHolder($fillSession->getChanges(), $this->world);
 		}
-
-		return $this;
-	}
+        foreach($fillSession->getChanges()->getCoordsArray() as $coordHash){
+            $x = 0;
+            $y = 0;
+            $z = 0;
+            World::getBlockXYZ($coordHash, $x, $y, $z);
+            $block = BuilderTools::getInstance()->getServer()->getWorldManager()->getWorld($this->world->getId())->getBlockAt($x,$y,$z);
+            if($block->getTypeId() === VanillaBlocks::CHEST()->getTypeId()){
+                BuilderTools::getInstance()->getServer()->broadcastMessage("Chest Found at: $x $y $z");
+            }
+        }
+        return $this;
+    }
 
 	public function outline(BlockIdentifierList $blockGenerator, bool $saveReverseData): self {
 		$fillSession = $this->mask === null ?
